@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #000;
+      font-family: Arial, sans-serif;
+    }
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      animation: float 3s infinite ease-in-out;
+    }
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+    .scroll {
+      width: 70%;
+      height: 70%;
+      background: url('https://images4.imagebam.com/9e/34/2c/MEZNNBG_o.png') no-repeat center center;
+      background-size: contain;
+      opacity: 0.8;
+    }
+    .note {
+      position: absolute;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      font-size: 18px;
+      color: #333;
+      display: none;
+      z-index: 10;
+      transform-origin: center;
+      animation: unfold 0.5s ease-out forwards;
+    }
+    @keyframes unfold {
+      0% {
+        transform: scale(0);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .note button {
+      margin-top: 10px;
+      padding: 5px 10px;
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .note button:hover {
+      background: #ff1a1a;
+    }
+    .heart {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: url('https://images4.imagebam.com/85/d9/49/MEZNO6Y_o.png') no-repeat center center;
+      background-size: contain;
+      animation: flyAway 3s ease-out forwards;
+    }
+    @keyframes flyAway {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh) scale(0.7);
+        opacity: 0;
+      }
+    }
+    .burst {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background: transparent;
+      border-radius: 50%;
+      animation: burstEffect 0.5s ease-out forwards;
+    }
+    @keyframes burstEffect {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+<script>
+  const numBubbles = 10;
+  const messages = [
+    "Eres el amor de mi vida 💖",
+    "Mi corazón late por ti 🫀",
+    "Eres mi preciosa 📜",
+    "Eres mi luz en la oscuridad ✨",
+    "Contigo todo es posible 🌟",
+    "Eres mi mayor tesoro 💎",
+    "Te amo tanto tanto <3",
+    "Mi loca, que salió del manicomio ❤️",
+    "Eres mi sueño hecho realidad 🌙",
+    "Te amo Bri Acevedo Pacheco"
+  ];
+  const bubbles = [];
+
+  function createBubble(index) {
+    const bubble = document.createElement('div');
+    bubble.classList.add('bubble');
+    const size = Math.random() * 50 + 80; // Tamaño entre 80px y 130px
+    bubble.style.width = `${size}px`;
+    bubble.style.height = `${size}px`;
+    bubble.style.left = `${Math.random() * (window.innerWidth - size)}px`;
+    bubble.style.top = `${Math.random() * (window.innerHeight - size)}px`;
+
+    // Crear el contenido dentro de la burbuja
+    const scroll = document.createElement('div');
+    scroll.classList.add('scroll');
+    bubble.appendChild(scroll);
+
+    // Velocidad y dirección
+    bubble.speedX = (Math.random() - 0.5) * 1.5; // Movimiento horizontal
+    bubble.speedY = (Math.random() - 0.5) * 1.5; // Movimiento vertical
+
+    // Asignar mensaje único a cada burbuja
+    bubble.message = messages[index];
+
+    // Evento de clic para romper la burbuja
+    bubble.addEventListener('click', () => {
+      // Crear efecto de explosión
+      const burst = document.createElement('div');
+      burst.classList.add('burst');
+      burst.style.left = `${parseFloat(bubble.style.left) + size / 2 - 50}px`;
+      burst.style.top = `${parseFloat(bubble.style.top) + size / 2 - 50}px`;
+      document.body.appendChild(burst);
+
+      // Ocultar la burbuja inmediatamente
+      bubble.style.display = 'none';
+
+      // Mostrar la nota desde el centro de la burbuja
+      setTimeout(() => {
+        showNote(bubble.message, parseFloat(bubble.style.left), parseFloat(bubble.style.top), size);
+      }, 500);
+
+      // Eliminar la burbuja y el efecto después de la animación
+      setTimeout(() => {
+        bubble.remove();
+        burst.remove();
+      }, 500);
+    });
+
+    document.body.appendChild(bubble);
+    bubbles.push(bubble);
+  }
+
+  function moveBubbles() {
+    bubbles.forEach(bubble => {
+      if (!document.body.contains(bubble)) return;
+
+      let x = parseFloat(bubble.style.left);
+      let y = parseFloat(bubble.style.top);
+      const size = parseFloat(bubble.style.width);
+
+      // Actualizar posición
+      x += bubble.speedX;
+      y += bubble.speedY;
+
+      // Rebote en los bordes sin salirse de la pantalla
+      if (x <= 0 || x + size >= window.innerWidth) {
+        bubble.speedX *= -1;
+      }
+      if (y <= 0 || y + size >= window.innerHeight) {
+        bubble.speedY *= -1;
+      }
+
+      // Aplicar nueva posición
+      bubble.style.left = `${x}px`;
+      bubble.style.top = `${y}px`;
+    });
+  }
+
+  // Mostrar nota con mensaje
+  function showNote(message, x, y, size) {
+    const note = document.createElement('div');
+    note.classList.add('note');
+    note.innerHTML = `<p>${message}</p><button>Cerrar</button>`;
+    note.style.left = `${x + size / 2 - 100}px`; // Centrar la nota en la burbuja
+    note.style.top = `${y + size / 2 - 50}px`;
+    document.body.appendChild(note);
+
+    // Mostrar la nota con animación de desdoblado
+    setTimeout(() => note.style.display = 'block', 10);
+
+    // Cerrar nota al hacer clic en el botón
+    note.querySelector('button').addEventListener('click', () => {
+      note.style.display = 'none'; // Ocultar la nota primero
+      const heart = document.createElement('div');
+      heart.classList.add('heart');
+      heart.style.left = `${x + size / 2}px`;
+      heart.style.top = `${y + size / 2}px`;
+      document.body.appendChild(heart);
+
+      // Crear corazones adicionales
+      setTimeout(() => {
+        for (let i = 0; i < 6; i++) {
+          const flyingHeart = document.createElement('div');
+          flyingHeart.classList.add('heart');
+          flyingHeart.style.left = `${Math.random() * window.innerWidth}px`;
+          flyingHeart.style.top = `${Math.random() * window.innerHeight}px`;
+          document.body.appendChild(flyingHeart);
+
+          // Eliminar corazones después de la animación
+          setTimeout(() => flyingHeart.remove(), 3000);
+        }
+        note.remove(); // Eliminar la nota completamente después de la animación
+      }, 1000);
+    });
+  }
+
+  // Crear burbujas iniciales
+  for (let i = 0; i < numBubbles; i++) {
+    createBubble(i);
+  }
+
+  // Animación continua
+  function animate() {
+    moveBubbles();
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  // Ajustar al cambiar el tamaño de la ventana
+  window.addEventListener('resize', () => {
+    bubbles.forEach(bubble => {
+      if (document.body.contains(bubble)) {
+        const size = parseFloat(bubble.style.width);
+        bubble.style.left = `${Math.random() * (window.innerWidth - size)}px`;
+        bubble.style.top = `${Math.random() * (window.innerHeight - size)}px`;
+      }
+    });
+  });
+</script>
+</body>
+</html>
